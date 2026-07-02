@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Infant plasmid type 1 diabetes research logo mark</title>
+  <desc id="desc">A minimal circular plasmid mark with a subtle infant cradle form and one diabetes-blue node.</desc>
+  <defs>
+    <style>
+      .navy { fill: none; stroke: #062B4F; }
+      .teal { fill: none; stroke: #0B8F92; }
+      .blue { fill: #1F7AE0; }
+      .solid-navy { fill: #062B4F; }
+      .solid-teal { fill: #0B8F92; }
+      .white { fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <g transform="translate(0 4)">
+    <path
+      class="navy"
+      d="M 274 590
+         C 230 422 336 253 506 226
+         C 646 204 779 282 832 407"
+      stroke-width="54"
+      stroke-linecap="round"
+      stroke-linejoin="round" />
+
+    <path
+      class="teal"
+      d="M 808 520
+         C 780 687 622 797 458 765
+         C 333 741 244 654 224 534"
+      stroke-width="54"
+      stroke-linecap="round"
+      stroke-linejoin="round" />
+
+    <circle class="solid-navy" cx="322" cy="356" r="24" />
+    <circle class="blue" cx="793" cy="405" r="34" />
+    <circle class="solid-teal" cx="402" cy="748" r="26" />
+
+    <circle class="solid-navy" cx="486" cy="434" r="32" />
+    <path
+      class="teal"
+      d="M 570 466
+         C 626 538 574 635 476 640
+         C 408 643 360 604 360 548"
+      stroke-width="46"
+      stroke-linecap="round"
+      stroke-linejoin="round" />
+    <path
+      class="navy"
+      d="M 604 502
+         C 620 602 536 686 432 666"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round" />
+
+    <path
+      class="white"
+      d="M 507 545
+         C 543 523 557 488 542 455
+         C 589 493 589 569 535 610
+         C 500 637 453 637 421 612
+         C 459 610 487 591 507 545 Z" />
+  </g>
+</svg>

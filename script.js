@@ -1,11 +1,14 @@
 const lightbox = document.getElementById("lightbox");
 const closeButton = document.querySelector(".close");
 const lightboxCard = document.querySelector(".lightbox-card");
+const revealNodes = document.querySelectorAll("[data-reveal]");
 const IMAGE_DIR = "./images";
-const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "pdf"];
 
 let currentRatio = 4 / 5;
 let openAnimation = null;
+
+document.body.classList.add("js-ready");
 
 function parseRatio(value) {
   if (!value) return 4 / 5;
@@ -16,8 +19,8 @@ function parseRatio(value) {
 }
 
 function getFittedRect() {
-  const maxWidth = window.innerWidth * 0.82;
-  const maxHeight = window.innerHeight * 0.82;
+  const maxWidth = window.innerWidth * 0.86;
+  const maxHeight = window.innerHeight * 0.84;
   const viewportRatio = maxWidth / maxHeight;
 
   let width;
@@ -41,31 +44,12 @@ function getFittedRect() {
 
 function applyCanvasDesign(sourceCanvas) {
   lightboxCard.className = "lightbox-card";
-  sourceCanvas.classList.forEach((klass) => {
-    if (klass !== "canvas" && klass !== "paper") lightboxCard.classList.add(klass);
-  });
   lightboxCard.innerHTML = sourceCanvas.innerHTML;
 }
 
 function setCardRect(rect) {
   lightboxCard.style.width = `${rect.width}px`;
   lightboxCard.style.height = `${rect.height}px`;
-}
-
-function extractCardNumber(figure) {
-  const caption = figure.querySelector(".meta-row");
-  if (!caption) return null;
-  const text = caption.textContent || "";
-  const match = text.match(/No\.\s*([0-9]{1,2})/i);
-  return match ? Number(match[1]) : null;
-}
-
-function createImageForNumber(number) {
-  const padded = String(number).padStart(2, "0");
-  return {
-    padded,
-    base: `${IMAGE_DIR}/project-${padded}`,
-  };
 }
 
 function loadAssetForCanvas(canvas, base, extensions, index = 0) {
@@ -92,9 +76,7 @@ function loadAssetForCanvas(canvas, base, extensions, index = 0) {
       loadAssetForCanvas(canvas, base, extensions, index + 1);
     });
     setTimeout(() => {
-      if (!canvas.contains(probe)) {
-        loadAssetForCanvas(canvas, base, extensions, index + 1);
-      }
+      if (!canvas.contains(probe)) loadAssetForCanvas(canvas, base, extensions, index + 1);
     }, 1200);
     return;
   }
@@ -115,19 +97,15 @@ function loadAssetForCanvas(canvas, base, extensions, index = 0) {
 }
 
 function initializeCardImages() {
-  const figures = document.querySelectorAll(".gallery-col .art");
-  figures.forEach((figure) => {
-    const canvas = figure.querySelector(".canvas");
-    if (!canvas) return;
-
-    const number = extractCardNumber(figure);
+  document.querySelectorAll(".canvas[data-project]").forEach((canvas) => {
+    const number = canvas.dataset.project;
     if (!number) return;
 
-    canvas.querySelectorAll("img.paper-image, embed.paper-pdf, object.paper-pdf").forEach((el) => el.remove());
+    canvas.querySelectorAll("img.paper-image, embed.paper-pdf").forEach((element) => element.remove());
     canvas.classList.remove("has-image", "has-pdf");
 
-    const asset = createImageForNumber(number);
-    loadAssetForCanvas(canvas, asset.base, IMAGE_EXTENSIONS);
+    const padded = String(number).padStart(2, "0");
+    loadAssetForCanvas(canvas, `${IMAGE_DIR}/project-${padded}`, IMAGE_EXTENSIONS);
   });
 }
 
@@ -135,13 +113,12 @@ function openLightboxFromCanvas(sourceCanvas) {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const sourceRect = sourceCanvas.getBoundingClientRect();
   const sourceImage = sourceCanvas.querySelector("img");
-  if (sourceImage && sourceImage.naturalWidth > 0 && sourceImage.naturalHeight > 0) {
-    currentRatio = sourceImage.naturalWidth / sourceImage.naturalHeight;
-  } else if (sourceCanvas.classList.contains("has-pdf")) {
-    currentRatio = parseRatio(getComputedStyle(sourceCanvas).aspectRatio);
-  } else {
-    currentRatio = parseRatio(getComputedStyle(sourceCanvas).aspectRatio);
-  }
+
+  currentRatio =
+    sourceImage && sourceImage.naturalWidth > 0 && sourceImage.naturalHeight > 0
+      ? sourceImage.naturalWidth / sourceImage.naturalHeight
+      : parseRatio(getComputedStyle(sourceCanvas).aspectRatio);
+
   applyCanvasDesign(sourceCanvas);
   const targetRect = getFittedRect();
   setCardRect(targetRect);
@@ -167,7 +144,6 @@ function openLightboxFromCanvas(sourceCanvas) {
   lightboxCard.style.transformOrigin = "top left";
   lightboxCard.style.willChange = "transform";
   lightboxCard.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
-
   lightboxCard.getBoundingClientRect();
 
   openAnimation = lightboxCard.animate(
@@ -200,6 +176,43 @@ function closeLightbox() {
   lightbox.setAttribute("aria-hidden", "true");
 }
 
+function initializeReveal() {
+  if (!("IntersectionObserver" in window)) {
+    revealNodes.forEach((node) => node.classList.add("is-revealed"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-revealed");
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.08, rootMargin: "0px 0px -8% 0px" }
+  );
+
+  revealNodes.forEach((node) => observer.observe(node));
+
+  window.setTimeout(() => {
+    revealNodes.forEach((node) => node.classList.add("is-revealed"));
+  }, 900);
+}
+
+function initializeAnchorLinks() {
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const href = link.getAttribute("href");
+      if (!href || href === "#") return;
+      const target = document.querySelector(href);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
 document.querySelectorAll(".zoomable .canvas").forEach((canvas) => {
   canvas.addEventListener("click", () => openLightboxFromCanvas(canvas));
 });
@@ -220,3 +233,5 @@ window.addEventListener("resize", () => {
 });
 
 initializeCardImages();
+initializeReveal();
+initializeAnchorLinks();
